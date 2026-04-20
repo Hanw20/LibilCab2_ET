@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'highscore.dart';
+import 'package:projectuts_libilcab2/class/question.dart';
 
 String active_user = "";
 
@@ -11,22 +13,9 @@ Future<String> checkUser() async {
   return prefs.getString("user_id") ?? '';
 }
 
-Future<String> topUser() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getString("top_user") ?? '';
-}
-
 Future<int> topPoint() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getInt("top_point") ?? 0;
-}
-
-// ================= MODEL =================
-class Question {
-  String correctImage;
-  List<String> options;
-
-  Question({required this.correctImage, required this.options});
 }
 
 // ================= GAME =================
@@ -38,22 +27,73 @@ class Game extends StatefulWidget {
 }
 
 class _GameState extends State<Game> {
-  // TIMER
-  late Timer _timer;
+  Timer? _timer;
   int _timeLeft = 30;
-  int _initTime = 30;
+  final int _initTime = 30;
 
-  // GAME STATE
   int _questionIndex = 0;
   int _score = 0;
   bool _isGameOver = false;
 
-  // MEMORY MODE
   bool _isMemorizing = true;
   int _memoryIndex = 0;
 
   List<String> _memoryImages = [];
   List<Question> _questions = [];
+
+  // ================= BANK SOAL =================
+  List<Question> bankSoal = [
+    Question(
+      kategory: "mobil",
+      pilihan: [
+        "assets/images/mobil1.png",
+        "assets/images/mobil2.png",
+        "assets/images/mobil3.png",
+        "assets/images/mobil4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "apel",
+      pilihan: [
+        "assets/images/apel1.png",
+        "assets/images/apel2.png",
+        "assets/images/apel3.png",
+        "assets/images/apel4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "pensil",
+      pilihan: [
+        "assets/images/pensil1.png",
+        "assets/images/pensil2.png",
+        "assets/images/pensil3.png",
+        "assets/images/pensil4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "bola",
+      pilihan: [
+        "assets/images/bola1.png",
+        "assets/images/bola2.png",
+        "assets/images/bola3.png",
+        "assets/images/bola4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "sepatu",
+      pilihan: [
+        "assets/images/sepatu1.png",
+        "assets/images/sepatu2.png",
+        "assets/images/sepatu3.png",
+        "assets/images/sepatu4.png",
+      ],
+      jawaban: "",
+    ),
+  ];
 
   // ================= INIT =================
   @override
@@ -71,57 +111,44 @@ class _GameState extends State<Game> {
 
   // ================= SETUP =================
   void setupGame() {
-    // GANTI DENGAN ASSET KAMU
-    _memoryImages = [
-      "assets/pencil_blue.png",
-      "assets/apple_red.png",
-      "assets/car_green.png",
-      "assets/ball_yellow.png",
-      "assets/book_blue.png",
-    ];
+    _questions.clear();
+    _memoryImages.clear();
 
-    _memoryImages.shuffle();
+    List<Question> shuffled = List.from(bankSoal);
+    shuffled.shuffle();
 
-    // buat soal dari memory
-    for (var img in _memoryImages) {
+    for (var q in shuffled) {
+      List<String> imgs = List.from(q.pilihan);
+      imgs.shuffle();
+
+      // random jawaban
+      String correct = imgs[Random().nextInt(imgs.length)];
+
+      // ambil 4 pilihan
+      List<String> options = List.from(imgs)..shuffle();
+      options = options.take(4).toList();
+
       _questions.add(
         Question(
-          correctImage: img,
-          options: generateOptions(img),
+          kategory: q.kategory,
+          pilihan: options,
+          jawaban: correct,
         ),
       );
+
+      _memoryImages.add(correct);
     }
 
     startMemorizing();
   }
 
-  // ================= GENERATE OPTIONS =================
-  List<String> generateOptions(String correct) {
-    // contoh sederhana (HARUS kamu sesuaikan asset)
-    List<String> all = [
-      "assets/pencil_blue.png",
-      "assets/pencil_red.png",
-      "assets/pencil_green.png",
-      "assets/pencil_yellow.png",
-    ];
-
-    all.shuffle();
-
-    if (!all.contains(correct)) {
-      all[0] = correct;
-    }
-
-    all.shuffle();
-    return all.take(4).toList();
-  }
-
-  // ================= MEMORY PHASE =================
+  // ================= MEMORY =================
   void startMemorizing() async {
     for (int i = 0; i < _memoryImages.length; i++) {
       setState(() {
         _memoryIndex = i;
       });
-      await Future.delayed(const Duration(seconds: 3));
+      await Future.delayed(const Duration(seconds: 2));
     }
 
     setState(() {
@@ -148,9 +175,9 @@ class _GameState extends State<Game> {
 
   // ================= ANSWER =================
   void answer(String selected) {
-    _timer.cancel();
+    _timer?.cancel();
 
-    if (selected == _questions[_questionIndex].correctImage) {
+    if (selected == _questions[_questionIndex].jawaban) {
       _score += _timeLeft;
     }
 
@@ -159,7 +186,7 @@ class _GameState extends State<Game> {
 
   // ================= NEXT =================
   void nextQuestion() {
-    _timer.cancel();
+    _timer?.cancel();
 
     if (_questionIndex < _questions.length - 1) {
       setState(() {
@@ -173,7 +200,7 @@ class _GameState extends State<Game> {
 
   // ================= END =================
   void endGame() async {
-    _timer.cancel();
+    _timer?.cancel();
 
     int top = await topPoint();
 
@@ -212,50 +239,80 @@ class _GameState extends State<Game> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Memory Game")),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(10),
         child: _isGameOver
-            ? Text(
-                "Game Over\nScore: $_score",
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 24),
+            ? Center(
+                child: Text(
+                  "Game Over\nScore: $_score",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 24),
+                ),
               )
             : _isMemorizing
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Ingat gambar ini",
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      const SizedBox(height: 20),
-                      Image.asset(
-                        _memoryImages[_memoryIndex],
-                        height: 200,
-                      ),
-                    ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Ingat gambar ini",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Image.asset(
+                          _memoryImages[_memoryIndex],
+                          height: 200,
+                        ),
+                      ],
+                    ),
                   )
                 : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         "Time Left: $_timeLeft",
                         style: const TextStyle(fontSize: 20),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
 
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        children: _questions[_questionIndex]
-                            .options
-                            .map((img) {
-                          return GestureDetector(
-                            onTap: () => answer(img),
-                            child: Card(
-                              child: Image.asset(img),
-                            ),
-                          );
-                        }).toList(),
+                      Text(
+                        "Kategori: ${_questions[_questionIndex].kategory}",
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Expanded(
+                        child: GridView.builder(
+                          itemCount:
+                              _questions[_questionIndex].pilihan.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                          ),
+                          itemBuilder: (context, index) {
+                            String img =
+                                _questions[_questionIndex].pilihan[index];
+
+                            return GestureDetector(
+                              onTap: () => answer(img),
+                              child: Card(
+                                elevation: 4,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Image.asset(img),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -263,12 +320,9 @@ class _GameState extends State<Game> {
     );
   }
 
-  // ================= DISPOSE =================
   @override
   void dispose() {
-    try {
-      _timer.cancel();
-    } catch (_) {}
+    _timer?.cancel();
     super.dispose();
   }
 }

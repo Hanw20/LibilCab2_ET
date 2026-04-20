@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // nanti arahkan ke game screen
+                Navigator.pushNamed(context, "game");
               },
               child: Text("Play Game"),
             ),

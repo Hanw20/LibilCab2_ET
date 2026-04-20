@@ -1,6 +1,7 @@
 class Question {
-  String correctAnswer;
-  List<String> options;
+  String kategory;
+  String jawaban;
+  List<String> pilihan;
 
-  Question({required this.correctAnswer, required this.options});
+  Question({required this.kategory, required this.jawaban,required this.pilihan});
 }

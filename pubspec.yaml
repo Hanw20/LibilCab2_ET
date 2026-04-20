@@ -54,10 +54,35 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - assets/images/pensil_merah.png
-    - assets/images/pensil_kuning.png
-    - assets/images/pensil_hijau.png
-    - assets/images/pensil_biru.png
+    - assets/images/pensil1.png
+    - assets/images/pensil2.png
+    - assets/images/pensil3.png
+    - assets/images/pensil4.png
+    - assets/images/sepatu1.png
+    - assets/images/sepatu2.png
+    - assets/images/sepatu3.png
+    - assets/images/sepatu4.png
+    - assets/images/mobil1.png
+    - assets/images/mobil2.png
+    - assets/images/mobil3.png
+    - assets/images/mobil4.png
+    - assets/images/apel1.png
+    - assets/images/apel2.png
+    - assets/images/apel3.png
+    - assets/images/apel4.png
+    - assets/images/bola1.png
+    - assets/images/bola2.png
+    - assets/images/bola3.png
+    - assets/images/bola4.png
+
+
+
+
+
+
+
+
+
 
 
 
