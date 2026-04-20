@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projectuts_libilcab2/game.dart';
 import 'package:projectuts_libilcab2/highscore.dart';
 import 'package:projectuts_libilcab2/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,11 +32,10 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      routes: {     
-        'highscore': (context) => HighScore(),
+      routes: {'highscore': (context) => HighScore(),
+      'game': (context) => Game(),
       },
     );
-    //tes bolo
   }
 }
 
@@ -51,8 +51,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   int _currentIndex = 0;
-  // final List<Widget> _screens = [Home(), Search(), History()];
-  // final List<String> _title = ['Home', 'Search', 'History'];
 
   void doLogout() async {
     //later, we use web service here to check the user id and password
@@ -80,46 +78,33 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // bottomNavigationBar: myBottomNav(),
-      // persistentFooterButtons: <Widget>[
-      //   ElevatedButton(
-      //     onPressed: () {},
-      //     child: const Icon(Icons.skip_previous),
-      //   ),
-      //   ElevatedButton(onPressed: () {}, child: const Icon(Icons.skip_next)),
-      // ],
       drawer: myDrawer(),
 
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text("Home")
+        title: Text("Home"),
       ),
-      // body: _screens[_currentIndex],
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _incrementCounter,
-      //   tooltip: 'Increment',
-      //   child: const Icon(Icons.add),
-      // ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Cara Bermain:\nJawab semua pertanyaan dengan benar untuk mendapatkan skor tertinggi!",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // nanti arahkan ke game screen
+              },
+              child: Text("Play Game"),
+            ),
+          ],
+        ),
+      ),
     );
   }
-
-  // BottomNavigationBar myBottomNav() {
-  //   return BottomNavigationBar(
-  //     currentIndex: _currentIndex,
-  //     onTap: (int index) {
-  //       setState(() {
-  //         _currentIndex = index;
-  //       });
-  //     },
-
-  //     fixedColor: Colors.teal,
-  //     items: const [
-  //       BottomNavigationBarItem(label: "Home", icon: Icon(Icons.home)),
-  //       BottomNavigationBarItem(label: "Search", icon: Icon(Icons.search)),
-  //       BottomNavigationBarItem(label: "History", icon: Icon(Icons.history)),
-  //     ],
-  //   );
-  // }
 
   Widget myDrawer() {
     return Drawer(

@@ -53,6 +53,13 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - assets/images/pensil_merah.png
+    - assets/images/pensil_kuning.png
+    - assets/images/pensil_hijau.png
+    - assets/images/pensil_biru.png
+
+
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
