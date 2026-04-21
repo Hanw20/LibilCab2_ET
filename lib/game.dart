@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projectuts_libilcab2/level_selection.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,9 +19,15 @@ Future<int> topPoint() async {
   return prefs.getInt("top_point") ?? 0;
 }
 
+
+
+  
+
 // ================= GAME =================
 class Game extends StatefulWidget {
-  const Game({super.key});
+  final String level; // tambahan parameter level
+
+  const Game({super.key, required this.level});
 
   @override
   State<Game> createState() => _GameState();
@@ -41,10 +48,23 @@ class _GameState extends State<Game> {
   List<String> _memoryImages = [];
   List<Question> _questions = [];
 
-  // ================= BANK SOAL =================
+  // ================= JUMLAH SOAL BERDASARKAN LEVEL =================
+  int get _totalQuestions {
+    switch (widget.level) {
+      case "medium":
+        return 10;
+      case "hard":
+        return 15;
+      default: // easy
+        return 5;
+    }
+  }
+
   List<Question> bankSoal = [
+    // ===== EASY =====
     Question(
       kategory: "mobil",
+      level: "easy",
       pilihan: [
         "assets/images/mobil1.png",
         "assets/images/mobil2.png",
@@ -55,6 +75,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "apel",
+      level: "easy",
       pilihan: [
         "assets/images/apel1.png",
         "assets/images/apel2.png",
@@ -65,6 +86,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "pensil",
+      level: "easy",
       pilihan: [
         "assets/images/pensil1.png",
         "assets/images/pensil2.png",
@@ -75,6 +97,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "bola",
+      level: "easy",
       pilihan: [
         "assets/images/bola1.png",
         "assets/images/bola2.png",
@@ -85,11 +108,126 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "sepatu",
+      level: "easy",
       pilihan: [
         "assets/images/sepatu1.png",
         "assets/images/sepatu2.png",
         "assets/images/sepatu3.png",
         "assets/images/sepatu4.png",
+      ],
+      jawaban: "",
+    ),
+
+    // ===== MEDIUM =====
+    Question(
+      kategory: "kucing",
+      level: "medium",
+      pilihan: [
+        "assets/images/kucing1.png",
+        "assets/images/kucing2.png",
+        "assets/images/kucing3.png",
+        "assets/images/kucing4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "rumah",
+      level: "medium",
+      pilihan: [
+        "assets/images/rumah1.png",
+        "assets/images/rumah2.png",
+        "assets/images/rumah3.png",
+        "assets/images/rumah4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "bunga",
+      level: "medium",
+      pilihan: [
+        "assets/images/bunga1.png",
+        "assets/images/bunga2.png",
+        "assets/images/bunga3.png",
+        "assets/images/bunga4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "pohon",
+      level: "medium",
+      pilihan: [
+        "assets/images/pohon1.png",
+        "assets/images/pohon2.png",
+        "assets/images/pohon3.png",
+        "assets/images/pohon4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "buku",
+      level: "medium",
+      pilihan: [
+        "assets/images/buku1.png",
+        "assets/images/buku2.png",
+        "assets/images/buku3.png",
+        "assets/images/buku4.png",
+      ],
+      jawaban: "",
+    ),
+
+    // ===== HARD =====
+    Question(
+      kategory: "meja",
+      level: "hard",
+      pilihan: [
+        "assets/images/meja1.png",
+        "assets/images/meja2.png",
+        "assets/images/meja3.png",
+        "assets/images/meja4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "kursi",
+      level: "hard",
+      pilihan: [
+        "assets/images/kursi1.png",
+        "assets/images/kursi2.png",
+        "assets/images/kursi3.png",
+        "assets/images/kursi4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "tas",
+      level: "hard",
+      pilihan: [
+        "assets/images/tas1.png",
+        "assets/images/tas2.png",
+        "assets/images/tas3.png",
+        "assets/images/tas4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "jam",
+      level: "hard",
+      pilihan: [
+        "assets/images/jam1.png",
+        "assets/images/jam2.png",
+        "assets/images/jam3.png",
+        "assets/images/jam4.png",
+      ],
+      jawaban: "",
+    ),
+    Question(
+      kategory: "kunci",
+      level: "hard",
+      pilihan: [
+        "assets/images/kunci1.png",
+        "assets/images/kunci2.png",
+        "assets/images/kunci3.png",
+        "assets/images/kunci4.png",
       ],
       jawaban: "",
     ),
@@ -109,38 +247,49 @@ class _GameState extends State<Game> {
     setupGame();
   }
 
-  // ================= SETUP =================
-  void setupGame() {
-    _questions.clear();
-    _memoryImages.clear();
+ void setupGame() {
+  _questions.clear();
+  _memoryImages.clear();
 
-    List<Question> shuffled = List.from(bankSoal);
-    shuffled.shuffle();
+  // ↓ GANTI BAGIAN INI ↓
+  List<String> allowedLevels = widget.level == "easy"
+      ? ["easy"]
+      : widget.level == "medium"
+          ? ["easy", "medium"]
+          : ["easy", "medium", "hard"];
 
-    for (var q in shuffled) {
-      List<String> imgs = List.from(q.pilihan);
-      imgs.shuffle();
+  List<Question> filtered = bankSoal
+      .where((q) => allowedLevels.contains(q.level))
+      .toList();
+  // ↑ SAMPAI SINI ↑
 
-      // random jawaban
-      String correct = imgs[Random().nextInt(imgs.length)];
+  // Sisanya tetap sama
+  filtered.shuffle();
+  filtered = filtered.take(_totalQuestions).toList();
 
-      // ambil 4 pilihan
-      List<String> options = List.from(imgs)..shuffle();
-      options = options.take(4).toList();
+  for (var q in filtered) {
+    List<String> imgs = List.from(q.pilihan);
+    imgs.shuffle();
 
-      _questions.add(
-        Question(
-          kategory: q.kategory,
-          pilihan: options,
-          jawaban: correct,
-        ),
-      );
+    String correct = imgs[Random().nextInt(imgs.length)];
 
-      _memoryImages.add(correct);
-    }
+    List<String> options = List.from(imgs)..shuffle();
+    options = options.take(4).toList();
 
-    startMemorizing();
+    _questions.add(
+      Question(
+        kategory: q.kategory,
+        level: q.level,
+        pilihan: options,
+        jawaban: correct,
+      ),
+    );
+
+    _memoryImages.add(correct);
   }
+
+  startMemorizing();
+}
 
   // ================= MEMORY =================
   void startMemorizing() async {
@@ -218,8 +367,24 @@ class _GameState extends State<Game> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Game Finished"),
-        content: Text("Your Score: $_score"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Level: ${widget.level.toUpperCase()}"),
+            Text("Your Score: $_score"),
+          ],
+        ),
         actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LevelSelection()),
+                (route) => false,
+              );
+            },
+            child: const Text("MAIN LAGI"),
+          ),
           TextButton(
             onPressed: () {
               Navigator.push(
@@ -228,7 +393,7 @@ class _GameState extends State<Game> {
               );
             },
             child: const Text("SEE HIGHSCORE"),
-          )
+          ),
         ],
       ),
     );
@@ -238,7 +403,9 @@ class _GameState extends State<Game> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Memory Game")),
+      appBar: AppBar(
+        title: Text("Memory Game - ${widget.level.toUpperCase()}"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: _isGameOver
@@ -250,72 +417,82 @@ class _GameState extends State<Game> {
                 ),
               )
             : _isMemorizing
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Ingat gambar ini",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Image.asset(
-                          _memoryImages[_memoryIndex],
-                          height: 200,
-                        ),
-                      ],
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Soal ${_memoryIndex + 1} / $_totalQuestions",
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
                     ),
-                  )
-                : Column(
-                    children: [
-                      Text(
-                        "Time Left: $_timeLeft",
-                        style: const TextStyle(fontSize: 20),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Ingat gambar ini",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(height: 10),
+                    ),
+                    const SizedBox(height: 20),
+                    Image.asset(_memoryImages[_memoryIndex], height: 200),
+                  ],
+                ),
+              )
+            : Column(
+                children: [
+                  // Progress soal
+                  Text(
+                    "Soal ${_questionIndex + 1} / $_totalQuestions",
+                    style: const TextStyle(fontSize: 15, color: Colors.grey),
+                  ),
+                  LinearProgressIndicator(
+                    value: (_questionIndex + 1) / _totalQuestions,
+                  ),
+                  const SizedBox(height: 8),
 
-                      Text(
-                        "Kategori: ${_questions[_questionIndex].kategory}",
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                  Text(
+                    "Time Left: $_timeLeft",
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 10),
 
-                      const SizedBox(height: 10),
+                  Text(
+                    "Kategori: ${_questions[_questionIndex].kategory}",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
 
-                      Expanded(
-                        child: GridView.builder(
-                          itemCount:
-                              _questions[_questionIndex].pilihan.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
+                  const SizedBox(height: 10),
+
+                  Expanded(
+                    child: GridView.builder(
+                      itemCount: _questions[_questionIndex].pilihan.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             crossAxisSpacing: 10,
                             mainAxisSpacing: 10,
                           ),
-                          itemBuilder: (context, index) {
-                            String img =
-                                _questions[_questionIndex].pilihan[index];
+                      itemBuilder: (context, index) {
+                        String img = _questions[_questionIndex].pilihan[index];
 
-                            return GestureDetector(
-                              onTap: () => answer(img),
-                              child: Card(
-                                elevation: 4,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Image.asset(img),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                        return GestureDetector(
+                          onTap: () => answer(img),
+                          child: Card(
+                            elevation: 4,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Image.asset(img),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
+                ],
+              ),
       ),
     );
   }

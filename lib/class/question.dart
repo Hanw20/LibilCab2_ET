@@ -1,7 +1,13 @@
 class Question {
-  String kategory;
-  String jawaban;
-  List<String> pilihan;
+  final String kategory;
+  final List<String> pilihan;
+  final String jawaban;
+  final String level; 
 
-  Question({required this.kategory, required this.jawaban,required this.pilihan});
+  Question({
+    required this.kategory,
+    required this.pilihan,
+    required this.jawaban,
+    required this.level,
+  });
 }
