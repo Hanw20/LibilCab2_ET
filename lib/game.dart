@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'highscore.dart';
 import 'package:projectuts_libilcab2/class/question.dart';
+import 'dart:convert';
 
 String active_user = "";
 
@@ -21,7 +22,39 @@ Future<int> topPoint() async {
 
 
 
-  
+  Future<void> saveScore(String user, int score) async {
+  final prefs = await SharedPreferences.getInstance();
+
+  // ambil data lama
+  List<String> scoreList = prefs.getStringList("scores") ?? [];
+
+  // convert ke List<Map>
+  List<Map<String, dynamic>> scores = scoreList
+      .map((e) => jsonDecode(e) as Map<String, dynamic>)
+      .toList();
+
+  // tambah data baru
+  scores.add({
+    "user": user,
+    "score": score,
+    "date": DateTime.now().toString()
+  });
+
+  // urutkan dari skor terbesar
+  scores.sort((a, b) => b["score"].compareTo(a["score"]));
+
+  // ambil top 10 saja
+  scores = scores.take(10).toList();
+
+  // simpan lagi ke SharedPreferences
+  List<String> encoded =
+      scores.map((e) => jsonEncode(e)).toList();
+
+  await prefs.setStringList("scores", encoded);
+}
+
+
+
 
 // ================= GAME =================
 class Game extends StatefulWidget {
@@ -353,11 +386,7 @@ class _GameState extends State<Game> {
 
     int top = await topPoint();
 
-    if (_score >= top) {
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setInt("top_point", _score);
-      prefs.setString("top_user", active_user);
-    }
+    await saveScore(active_user, _score);
 
     setState(() {
       _isGameOver = true;

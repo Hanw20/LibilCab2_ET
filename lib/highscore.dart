@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class HighScore extends StatefulWidget {
   const HighScore({super.key});
 
   @override
   State<HighScore> createState() => _HighScoreState();
-  
 }
 
 class _HighScoreState extends State<HighScore> {
-  String user = "-";
-  int point = 0;
+  List<Map<String, dynamic>> scores = [];
+
+  Future<void> loadScores() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> scoreList = prefs.getStringList("scores") ?? [];
+
+    scores = scoreList
+        .map((e) => jsonDecode(e) as Map<String, dynamic>)
+        .toList();
+
+    setState(() {});
+  }
 
   Future<int> topPoint() async {
     final prefs = await SharedPreferences.getInstance();
@@ -26,69 +36,81 @@ class _HighScoreState extends State<HighScore> {
   @override
   void initState() {
     super.initState();
-    loadData();
-  }
-
-  void loadData() async {
-    user = await topUser();
-    point = await topPoint();
-    setState(() {});
+    loadScores();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('High Score'), centerTitle: true),
-      body: Center(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          margin: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                blurRadius: 5,
-                color: Colors.black12,
-                offset: Offset(2, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.emoji_events, size: 50, color: Colors.orange),
-              const SizedBox(height: 10),
+      appBar: AppBar(title: const Text('Leaderboard'), centerTitle: true),
 
-              const Text(
-                "TOP PLAYER",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
+      body: scores.isEmpty
+          ? const Center(
+              child: Text("Belum ada score", style: TextStyle(fontSize: 18)),
+            )
+          : ListView.builder(
+              itemCount: scores.length,
+              itemBuilder: (context, index) {
+                final s = scores[index];
 
-              const Divider(height: 30, thickness: 1),
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 8,
+                  ),
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: index == 0
+                        ? Colors
+                              .amber
+                              .shade200 // rank 1
+                        : index == 1
+                        ? Colors
+                              .grey
+                              .shade300 // rank 2
+                        : index == 2
+                        ? Colors
+                              .orange
+                              .shade200 // rank 3
+                        : Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: Text(
+                      "#${index + 1}",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
 
-              Text("User: $user", style: const TextStyle(fontSize: 18)),
-              const SizedBox(height: 10),
+                    title: Text(
+                      s["user"],
+                      style: const TextStyle(fontSize: 16),
+                    ),
 
-              Text(
-                "Point: $point",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+                    subtitle: Text(
+                      "Tanggal: ${s["date"]}",
+                      style: const TextStyle(fontSize: 12),
+                    ),
 
-              const SizedBox(height: 20),
+                    trailing: Text(
+                      "${s["score"]}",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
 
-              ElevatedButton(
-                onPressed: () {
-                 Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-                },
-                child: const Text("Back to Home"),
-              ),
-            ],
-          ),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        },
+        child: const Icon(Icons.home),
       ),
     );
   }

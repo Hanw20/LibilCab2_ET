@@ -66,6 +66,10 @@ flutter:
     - assets/images/mobil2.png
     - assets/images/mobil3.png
     - assets/images/mobil4.png
+    - assets/images/kucing1.png
+    - assets/images/kucing4.png
+    - assets/images/kucing2.png
+    - assets/images/kucing3.png 
     - assets/images/apel1.png
     - assets/images/apel2.png
     - assets/images/apel3.png
@@ -74,6 +78,39 @@ flutter:
     - assets/images/bola2.png
     - assets/images/bola3.png
     - assets/images/bola4.png
+    - assets/images/buku1.png
+    - assets/images/buku2.png
+    - assets/images/buku3.png
+    - assets/images/buku4.png
+    - assets/images/bunga1.png
+    - assets/images/bunga2.png
+    - assets/images/bunga3.png
+    - assets/images/bunga4.png
+    - assets/images/jam1.png
+    - assets/images/jam2.png
+    - assets/images/jam3.png
+    - assets/images/jam4.png
+    - assets/images/kunci1.png
+    - assets/images/kunci2.png
+    - assets/images/kunci3.png
+    - assets/images/kunci4.png
+    - assets/images/kursi1.png
+    - assets/images/kursi2.png
+    - assets/images/kursi3.png
+    - assets/images/kursi4.png
+    - assets/images/meja1.png
+    - assets/images/meja2.png
+    - assets/images/meja3.png
+    - assets/images/meja4.png
+    - assets/images/pohon1.png
+    - assets/images/pohon2.png
+    - assets/images/pohon3.png
+    - assets/images/pohon4.png
+    - assets/images/tas1.png  
+    - assets/images/tas2.png
+    - assets/images/tas3.png
+    - assets/images/tas4.png
+
 
 
 
