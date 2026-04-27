@@ -20,41 +20,20 @@ Future<int> topPoint() async {
   return prefs.getInt("top_point") ?? 0;
 }
 
-
-
-  Future<void> saveScore(String user, int score) async {
+Future<void> saveScore(String user, int score) async {
   final prefs = await SharedPreferences.getInstance();
 
-  // ambil data lama
-  List<String> scoreList = prefs.getStringList("scores") ?? [];
+  List<String> data = prefs.getStringList("scores") ?? [];
+  List<List<String>> scores = data.map((e) => e.split("|")).toList();
 
-  // convert ke List<Map>
-  List<Map<String, dynamic>> scores = scoreList
-      .map((e) => jsonDecode(e) as Map<String, dynamic>)
-      .toList();
-
-  // tambah data baru
-  scores.add({
-    "user": user,
-    "score": score,
-    "date": DateTime.now().toString()
-  });
-
-  // urutkan dari skor terbesar
-  scores.sort((a, b) => b["score"].compareTo(a["score"]));
-
-  // ambil top 10 saja
-  scores = scores.take(10).toList();
-
-  // simpan lagi ke SharedPreferences
-  List<String> encoded =
-      scores.map((e) => jsonEncode(e)).toList();
-
-  await prefs.setStringList("scores", encoded);
+  scores.add([user, score.toString()]);
+  scores.sort((a, b) => int.parse(b[1]).compareTo(int.parse(a[1])));
+  if (scores.length > 3) {
+    scores = scores.sublist(0, 3);
+  }
+  List<String> saveData = scores.map((e) => "${e[0]}|${e[1]}").toList();
+  prefs.setStringList("scores", saveData);
 }
-
-
-
 
 // ================= GAME =================
 class Game extends StatefulWidget {
@@ -280,49 +259,49 @@ class _GameState extends State<Game> {
     setupGame();
   }
 
- void setupGame() {
-  _questions.clear();
-  _memoryImages.clear();
+  void setupGame() {
+    _questions.clear();
+    _memoryImages.clear();
 
-  // ↓ GANTI BAGIAN INI ↓
-  List<String> allowedLevels = widget.level == "easy"
-      ? ["easy"]
-      : widget.level == "medium"
-          ? ["easy", "medium"]
-          : ["easy", "medium", "hard"];
+    // ↓ GANTI BAGIAN INI ↓
+    List<String> allowedLevels = widget.level == "easy"
+        ? ["easy"]
+        : widget.level == "medium"
+        ? ["easy", "medium"]
+        : ["easy", "medium", "hard"];
 
-  List<Question> filtered = bankSoal
-      .where((q) => allowedLevels.contains(q.level))
-      .toList();
-  // ↑ SAMPAI SINI ↑
+    List<Question> filtered = bankSoal
+        .where((q) => allowedLevels.contains(q.level))
+        .toList();
+    // ↑ SAMPAI SINI ↑
 
-  // Sisanya tetap sama
-  filtered.shuffle();
-  filtered = filtered.take(_totalQuestions).toList();
+    // Sisanya tetap sama
+    filtered.shuffle();
+    filtered = filtered.take(_totalQuestions).toList();
 
-  for (var q in filtered) {
-    List<String> imgs = List.from(q.pilihan);
-    imgs.shuffle();
+    for (var q in filtered) {
+      List<String> imgs = List.from(q.pilihan);
+      imgs.shuffle();
 
-    String correct = imgs[Random().nextInt(imgs.length)];
+      String correct = imgs[Random().nextInt(imgs.length)];
 
-    List<String> options = List.from(imgs)..shuffle();
-    options = options.take(4).toList();
+      List<String> options = List.from(imgs)..shuffle();
+      options = options.take(4).toList();
 
-    _questions.add(
-      Question(
-        kategory: q.kategory,
-        level: q.level,
-        pilihan: options,
-        jawaban: correct,
-      ),
-    );
+      _questions.add(
+        Question(
+          kategory: q.kategory,
+          level: q.level,
+          pilihan: options,
+          jawaban: correct,
+        ),
+      );
 
-    _memoryImages.add(correct);
+      _memoryImages.add(correct);
+    }
+
+    startMemorizing();
   }
-
-  startMemorizing();
-}
 
   // ================= MEMORY =================
   void startMemorizing() async {
@@ -383,9 +362,6 @@ class _GameState extends State<Game> {
   // ================= END =================
   void endGame() async {
     _timer?.cancel();
-
-    int top = await topPoint();
-
     await saveScore(active_user, _score);
 
     setState(() {
@@ -501,8 +477,9 @@ class _GameState extends State<Game> {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
+                            childAspectRatio: 3,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
                           ),
                       itemBuilder: (context, index) {
                         String img = _questions[_questionIndex].pilihan[index];
@@ -510,10 +487,12 @@ class _GameState extends State<Game> {
                         return GestureDetector(
                           onTap: () => answer(img),
                           child: Card(
-                            elevation: 4,
+                            elevation: 2,
                             child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Image.asset(img),
+                              padding: const EdgeInsets.all(5),
+                              child: Center(
+                                child: Image.asset(img, fit: BoxFit.contain),
+                              ),
                             ),
                           ),
                         );

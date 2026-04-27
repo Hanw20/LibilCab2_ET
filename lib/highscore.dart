@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 
 class HighScore extends StatefulWidget {
   const HighScore({super.key});
@@ -10,27 +9,16 @@ class HighScore extends StatefulWidget {
 }
 
 class _HighScoreState extends State<HighScore> {
-  List<Map<String, dynamic>> scores = [];
+  List<List<String>> scores = [];
 
   Future<void> loadScores() async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> scoreList = prefs.getStringList("scores") ?? [];
 
-    scores = scoreList
-        .map((e) => jsonDecode(e) as Map<String, dynamic>)
-        .toList();
+    List<String> data = prefs.getStringList("scores") ?? [];
+
+    scores = data.map((e) => e.split("|")).toList();
 
     setState(() {});
-  }
-
-  Future<int> topPoint() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt("top_point") ?? 0;
-  }
-
-  Future<String> topUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("top_user") ?? '-';
   }
 
   @override
@@ -42,68 +30,50 @@ class _HighScoreState extends State<HighScore> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Leaderboard'), centerTitle: true),
+      appBar: AppBar(title: const Text("High Score"), centerTitle: true),
 
       body: scores.isEmpty
-          ? const Center(
-              child: Text("Belum ada score", style: TextStyle(fontSize: 18)),
-            )
-          : ListView.builder(
-              itemCount: scores.length,
-              itemBuilder: (context, index) {
-                final s = scores[index];
-
+          ? const Center(child: Text("Belum ada data"))
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(scores.length, (index) {
                 return Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 8,
-                  ),
+                  margin: const EdgeInsets.all(10),
                   padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
                     color: index == 0
-                        ? Colors
-                              .amber
-                              .shade200 // rank 1
+                        ? Colors.amber.shade200
                         : index == 1
-                        ? Colors
-                              .grey
-                              .shade300 // rank 2
+                        ? Colors.grey.shade300
                         : index == 2
-                        ? Colors
-                              .orange
-                              .shade200 // rank 3
+                        ? Colors.orange.shade200
                         : Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: ListTile(
-                    leading: Text(
-                      "#${index + 1}",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "#${index + 1}",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
 
-                    title: Text(
-                      s["user"],
-                      style: const TextStyle(fontSize: 16),
-                    ),
-
-                    subtitle: Text(
-                      "Tanggal: ${s["date"]}",
-                      style: const TextStyle(fontSize: 12),
-                    ),
-
-                    trailing: Text(
-                      "${s["score"]}",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      Text(
+                        scores[index][0], // USER
+                        style: const TextStyle(fontSize: 18),
                       ),
-                    ),
+
+                      Text(
+                        scores[index][1], // SCORE
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ],
                   ),
                 );
-              },
+              }),
             ),
 
       floatingActionButton: FloatingActionButton(
