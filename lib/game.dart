@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:projectuts_libilcab2/level_selection.dart';
+import 'package:projectuts_libilcab2/hasil.dart';
+
 import 'dart:async';
-import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'highscore.dart';
 import 'package:projectuts_libilcab2/class/question.dart';
-import 'dart:convert';
 
 String active_user = "";
 
@@ -13,11 +12,6 @@ String active_user = "";
 Future<String> checkUser() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getString("user_id") ?? '';
-}
-
-Future<int> topPoint() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getInt("top_point") ?? 0;
 }
 
 Future<void> saveScore(String user, int score) async {
@@ -28,18 +22,18 @@ Future<void> saveScore(String user, int score) async {
 
   scores.add([user, score.toString()]);
   scores.sort((a, b) => int.parse(b[1]).compareTo(int.parse(a[1])));
+
   if (scores.length > 3) {
     scores = scores.sublist(0, 3);
   }
+
   List<String> saveData = scores.map((e) => "${e[0]}|${e[1]}").toList();
   prefs.setStringList("scores", saveData);
 }
 
 // ================= GAME =================
 class Game extends StatefulWidget {
-  final String level; // tambahan parameter level
-
-  const Game({super.key, required this.level});
+  const Game({super.key});
 
   @override
   State<Game> createState() => _GameState();
@@ -49,6 +43,7 @@ class _GameState extends State<Game> {
   Timer? _timer;
   int _timeLeft = 30;
   final int _initTime = 30;
+  int _correctAnswers = 0;
 
   int _questionIndex = 0;
   int _score = 0;
@@ -60,23 +55,13 @@ class _GameState extends State<Game> {
   List<String> _memoryImages = [];
   List<Question> _questions = [];
 
-  // ================= JUMLAH SOAL BERDASARKAN LEVEL =================
-  int get _totalQuestions {
-    switch (widget.level) {
-      case "medium":
-        return 10;
-      case "hard":
-        return 15;
-      default: // easy
-        return 5;
-    }
-  }
+  // ================= FIX JUMLAH SOAL =================
+  int get _totalQuestions => 5;
 
   List<Question> bankSoal = [
-    // ===== EASY =====
     Question(
       kategory: "mobil",
-      level: "easy",
+      level: "",
       pilihan: [
         "assets/images/mobil1.png",
         "assets/images/mobil2.png",
@@ -87,7 +72,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "apel",
-      level: "easy",
+      level: "",
       pilihan: [
         "assets/images/apel1.png",
         "assets/images/apel2.png",
@@ -98,7 +83,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "pensil",
-      level: "easy",
+      level: "",
       pilihan: [
         "assets/images/pensil1.png",
         "assets/images/pensil2.png",
@@ -109,7 +94,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "bola",
-      level: "easy",
+      level: "",
       pilihan: [
         "assets/images/bola1.png",
         "assets/images/bola2.png",
@@ -120,7 +105,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "sepatu",
-      level: "easy",
+      level: "",
       pilihan: [
         "assets/images/sepatu1.png",
         "assets/images/sepatu2.png",
@@ -129,11 +114,9 @@ class _GameState extends State<Game> {
       ],
       jawaban: "",
     ),
-
-    // ===== MEDIUM =====
     Question(
       kategory: "kucing",
-      level: "medium",
+      level: "",
       pilihan: [
         "assets/images/kucing1.png",
         "assets/images/kucing2.png",
@@ -144,7 +127,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "rumah",
-      level: "medium",
+      level: "",
       pilihan: [
         "assets/images/rumah1.png",
         "assets/images/rumah2.png",
@@ -155,7 +138,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "bunga",
-      level: "medium",
+      level: "",
       pilihan: [
         "assets/images/bunga1.png",
         "assets/images/bunga2.png",
@@ -166,7 +149,7 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "pohon",
-      level: "medium",
+      level: "",
       pilihan: [
         "assets/images/pohon1.png",
         "assets/images/pohon2.png",
@@ -177,69 +160,12 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "buku",
-      level: "medium",
+      level: "",
       pilihan: [
         "assets/images/buku1.png",
         "assets/images/buku2.png",
         "assets/images/buku3.png",
         "assets/images/buku4.png",
-      ],
-      jawaban: "",
-    ),
-
-    // ===== HARD =====
-    Question(
-      kategory: "meja",
-      level: "hard",
-      pilihan: [
-        "assets/images/meja1.png",
-        "assets/images/meja2.png",
-        "assets/images/meja3.png",
-        "assets/images/meja4.png",
-      ],
-      jawaban: "",
-    ),
-    Question(
-      kategory: "kursi",
-      level: "hard",
-      pilihan: [
-        "assets/images/kursi1.png",
-        "assets/images/kursi2.png",
-        "assets/images/kursi3.png",
-        "assets/images/kursi4.png",
-      ],
-      jawaban: "",
-    ),
-    Question(
-      kategory: "tas",
-      level: "hard",
-      pilihan: [
-        "assets/images/tas1.png",
-        "assets/images/tas2.png",
-        "assets/images/tas3.png",
-        "assets/images/tas4.png",
-      ],
-      jawaban: "",
-    ),
-    Question(
-      kategory: "jam",
-      level: "hard",
-      pilihan: [
-        "assets/images/jam1.png",
-        "assets/images/jam2.png",
-        "assets/images/jam3.png",
-        "assets/images/jam4.png",
-      ],
-      jawaban: "",
-    ),
-    Question(
-      kategory: "kunci",
-      level: "hard",
-      pilihan: [
-        "assets/images/kunci1.png",
-        "assets/images/kunci2.png",
-        "assets/images/kunci3.png",
-        "assets/images/kunci4.png",
       ],
       jawaban: "",
     ),
@@ -263,19 +189,8 @@ class _GameState extends State<Game> {
     _questions.clear();
     _memoryImages.clear();
 
-    // ↓ GANTI BAGIAN INI ↓
-    List<String> allowedLevels = widget.level == "easy"
-        ? ["easy"]
-        : widget.level == "medium"
-        ? ["easy", "medium"]
-        : ["easy", "medium", "hard"];
-
-    List<Question> filtered = bankSoal
-        .where((q) => allowedLevels.contains(q.level))
-        .toList();
-    // ↑ SAMPAI SINI ↑
-
-    // Sisanya tetap sama
+    // ================= RANDOM SEMUA SOAL =================
+    List<Question> filtered = List.from(bankSoal);
     filtered.shuffle();
     filtered = filtered.take(_totalQuestions).toList();
 
@@ -283,15 +198,15 @@ class _GameState extends State<Game> {
       List<String> imgs = List.from(q.pilihan);
       imgs.shuffle();
 
-      String correct = imgs[Random().nextInt(imgs.length)];
+      // ✅ FIX: jawaban = gambar pertama (konsisten dengan memory)
+      String correct = imgs[0];
 
       List<String> options = List.from(imgs)..shuffle();
-      options = options.take(4).toList();
 
       _questions.add(
         Question(
           kategory: q.kategory,
-          level: q.level,
+          level: "",
           pilihan: options,
           jawaban: correct,
         ),
@@ -321,6 +236,7 @@ class _GameState extends State<Game> {
 
   // ================= TIMER =================
   void startTimer() {
+    _timer?.cancel(); // FIX
     _timeLeft = _initTime;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -340,9 +256,12 @@ class _GameState extends State<Game> {
 
     if (selected == _questions[_questionIndex].jawaban) {
       _score += _timeLeft;
+      _correctAnswers++; // TAMBAH INI
     }
 
-    nextQuestion();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      nextQuestion();
+    });
   }
 
   // ================= NEXT =================
@@ -362,44 +281,20 @@ class _GameState extends State<Game> {
   // ================= END =================
   void endGame() async {
     _timer?.cancel();
-    await saveScore(active_user, _score);
+    await saveScore(active_user.isEmpty ? "Guest" : active_user, _score);
 
     setState(() {
       _isGameOver = true;
     });
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Game Finished"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("Level: ${widget.level.toUpperCase()}"),
-            Text("Your Score: $_score"),
-          ],
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Hasil(
+          score: _score,
+          correct: _correctAnswers,
+          total: _totalQuestions,
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LevelSelection()),
-                (route) => false,
-              );
-            },
-            child: const Text("MAIN LAGI"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => HighScore()),
-              );
-            },
-            child: const Text("SEE HIGHSCORE"),
-          ),
-        ],
       ),
     );
   }
@@ -408,9 +303,7 @@ class _GameState extends State<Game> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Memory Game - ${widget.level.toUpperCase()}"),
-      ),
+      appBar: AppBar(title: const Text("Memory Game")),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: _isGameOver
@@ -445,7 +338,6 @@ class _GameState extends State<Game> {
               )
             : Column(
                 children: [
-                  // Progress soal
                   Text(
                     "Soal ${_questionIndex + 1} / $_totalQuestions",
                     style: const TextStyle(fontSize: 15, color: Colors.grey),
@@ -454,13 +346,11 @@ class _GameState extends State<Game> {
                     value: (_questionIndex + 1) / _totalQuestions,
                   ),
                   const SizedBox(height: 8),
-
                   Text(
                     "Time Left: $_timeLeft",
                     style: const TextStyle(fontSize: 20),
                   ),
                   const SizedBox(height: 10),
-
                   Text(
                     "Kategori: ${_questions[_questionIndex].kategory}",
                     style: const TextStyle(
@@ -468,9 +358,7 @@ class _GameState extends State<Game> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   Expanded(
                     child: GridView.builder(
                       itemCount: _questions[_questionIndex].pilihan.length,

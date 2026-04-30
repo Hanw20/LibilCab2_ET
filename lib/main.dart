@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projectuts_libilcab2/game.dart';
 import 'package:projectuts_libilcab2/highscore.dart';
-import 'package:projectuts_libilcab2/level_selection.dart';
+
 import 'package:projectuts_libilcab2/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
       routes: {'highscore': (context) => HighScore(),
-      'level': (context) => LevelSelection(),
+      'game': (context) => Game(),
       },
     );
   }
@@ -97,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, "level");
+                Navigator.pushNamed(context, "game");
               },
               child: Text("Play Game"),
             ),
