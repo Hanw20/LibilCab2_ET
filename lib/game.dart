@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:projectuts_libilcab2/hasil.dart';
-
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'highscore.dart';
 import 'package:projectuts_libilcab2/class/question.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 
 String active_user = "";
 
@@ -41,27 +40,28 @@ class Game extends StatefulWidget {
 
 class _GameState extends State<Game> {
   Timer? _timer;
-  int _timeLeft = 30;
-  final int _initTime = 30;
-  int _correctAnswers = 0;
+  int _waktuGame = 30;
+  final int _setWaktuGame = 30;
+  int _jumlahJawabanBenar = 0;
+  int _waktuHapal = 3; 
+  final int _setWaktuHapal = 3; 
 
-  int _questionIndex = 0;
+  int _indexSoal = 0;
   int _score = 0;
   bool _isGameOver = false;
 
   bool _isMemorizing = true;
   int _memoryIndex = 0;
 
-  List<String> _memoryImages = [];
-  List<Question> _questions = [];
+  List<String> _listGambar = [];
+  List<Question> _soal = [];
 
   // ================= FIX JUMLAH SOAL =================
-  int get _totalQuestions => 5;
+  int get _totalSoal => 5;
 
   List<Question> bankSoal = [
     Question(
       kategory: "mobil",
-      level: "",
       pilihan: [
         "assets/images/mobil1.png",
         "assets/images/mobil2.png",
@@ -72,7 +72,6 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "apel",
-      level: "",
       pilihan: [
         "assets/images/apel1.png",
         "assets/images/apel2.png",
@@ -83,7 +82,6 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "pensil",
-      level: "",
       pilihan: [
         "assets/images/pensil1.png",
         "assets/images/pensil2.png",
@@ -94,7 +92,6 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "bola",
-      level: "",
       pilihan: [
         "assets/images/bola1.png",
         "assets/images/bola2.png",
@@ -105,7 +102,6 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "sepatu",
-      level: "",
       pilihan: [
         "assets/images/sepatu1.png",
         "assets/images/sepatu2.png",
@@ -116,7 +112,6 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "kucing",
-      level: "",
       pilihan: [
         "assets/images/kucing1.png",
         "assets/images/kucing2.png",
@@ -127,7 +122,6 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "rumah",
-      level: "",
       pilihan: [
         "assets/images/rumah1.png",
         "assets/images/rumah2.png",
@@ -138,7 +132,6 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "bunga",
-      level: "",
       pilihan: [
         "assets/images/bunga1.png",
         "assets/images/bunga2.png",
@@ -149,7 +142,6 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "pohon",
-      level: "",
       pilihan: [
         "assets/images/pohon1.png",
         "assets/images/pohon2.png",
@@ -160,7 +152,6 @@ class _GameState extends State<Game> {
     ),
     Question(
       kategory: "buku",
-      level: "",
       pilihan: [
         "assets/images/buku1.png",
         "assets/images/buku2.png",
@@ -186,33 +177,23 @@ class _GameState extends State<Game> {
   }
 
   void setupGame() {
-    _questions.clear();
-    _memoryImages.clear();
+    _soal.clear();
+    _listGambar.clear();
 
     // ================= RANDOM SEMUA SOAL =================
     List<Question> filtered = List.from(bankSoal);
     filtered.shuffle();
-    filtered = filtered.take(_totalQuestions).toList();
+    filtered = filtered.take(_totalSoal).toList();
 
     for (var q in filtered) {
       List<String> imgs = List.from(q.pilihan);
       imgs.shuffle();
-
-      // ✅ FIX: jawaban = gambar pertama (konsisten dengan memory)
       String correct = imgs[0];
-
       List<String> options = List.from(imgs)..shuffle();
-
-      _questions.add(
-        Question(
-          kategory: q.kategory,
-          level: "",
-          pilihan: options,
-          jawaban: correct,
-        ),
+      _soal.add(
+        Question(kategory: q.kategory, pilihan: options, jawaban: correct),
       );
-
-      _memoryImages.add(correct);
+      _listGambar.add(correct);
     }
 
     startMemorizing();
@@ -220,11 +201,17 @@ class _GameState extends State<Game> {
 
   // ================= MEMORY =================
   void startMemorizing() async {
-    for (int i = 0; i < _memoryImages.length; i++) {
+    for (int i = 0; i < _listGambar.length; i++) {
       setState(() {
         _memoryIndex = i;
+        _waktuHapal = _setWaktuHapal;
       });
-      await Future.delayed(const Duration(seconds: 2));
+      for (int t = _setWaktuHapal; t >= 0; t--) {
+        setState(() {
+          _waktuHapal = t;
+        });
+        await Future.delayed(const Duration(seconds: 1));
+      }
     }
 
     setState(() {
@@ -236,15 +223,15 @@ class _GameState extends State<Game> {
 
   // ================= TIMER =================
   void startTimer() {
-    _timer?.cancel(); // FIX
-    _timeLeft = _initTime;
+    _timer?.cancel(); 
+    _waktuGame = _setWaktuGame;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        _timeLeft--;
+        _waktuGame--;
 
-        if (_timeLeft == 0) {
-          nextQuestion();
+        if (_waktuGame == 0) {
+          nextSoal();
         }
       });
     });
@@ -254,23 +241,23 @@ class _GameState extends State<Game> {
   void answer(String selected) {
     _timer?.cancel();
 
-    if (selected == _questions[_questionIndex].jawaban) {
-      _score += _timeLeft;
-      _correctAnswers++; // TAMBAH INI
+    if (selected == _soal[_indexSoal].jawaban) {
+      _score += _waktuGame;
+      _jumlahJawabanBenar++; 
     }
 
     Future.delayed(const Duration(milliseconds: 500), () {
-      nextQuestion();
+      nextSoal();
     });
   }
 
   // ================= NEXT =================
-  void nextQuestion() {
+  void nextSoal() {
     _timer?.cancel();
 
-    if (_questionIndex < _questions.length - 1) {
+    if (_indexSoal < _soal.length - 1) {
       setState(() {
-        _questionIndex++;
+        _indexSoal++;
       });
       startTimer();
     } else {
@@ -292,8 +279,8 @@ class _GameState extends State<Game> {
       MaterialPageRoute(
         builder: (_) => Hasil(
           score: _score,
-          correct: _correctAnswers,
-          total: _totalQuestions,
+          correct: _jumlahJawabanBenar,
+          total: _totalSoal,
         ),
       ),
     );
@@ -320,7 +307,7 @@ class _GameState extends State<Game> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Soal ${_memoryIndex + 1} / $_totalQuestions",
+                      "Soal ${_memoryIndex + 1} / $_totalSoal",
                       style: const TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     const SizedBox(height: 8),
@@ -332,27 +319,47 @@ class _GameState extends State<Game> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Image.asset(_memoryImages[_memoryIndex], height: 200),
+                    Image.asset(_listGambar[_memoryIndex], height: 200),
+
+                    Text("Waktu Menghapal:", style: const TextStyle(fontSize: 20)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: CircularPercentIndicator(
+                        radius: 120.0,
+                        lineWidth: 20.0,
+                        percent: 1 - (_waktuHapal / _setWaktuHapal),
+                        center: Text("$_waktuHapal"),
+                        progressColor: Colors.red,
+                      ),
+                    ),
                   ],
                 ),
               )
             : Column(
                 children: [
                   Text(
-                    "Soal ${_questionIndex + 1} / $_totalQuestions",
+                    "Soal ${_indexSoal + 1} / $_totalSoal",
                     style: const TextStyle(fontSize: 15, color: Colors.grey),
                   ),
-                  LinearProgressIndicator(
-                    value: (_questionIndex + 1) / _totalQuestions,
-                  ),
+                  LinearProgressIndicator(value: (_indexSoal + 1) / _totalSoal),
                   const SizedBox(height: 8),
+                  Text("Time Left: $_waktuGame", style: const TextStyle(fontSize: 20)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: LinearProgressIndicator(
+                      value: _waktuGame / _setWaktuGame,
+                      minHeight: 10,
+                      backgroundColor: Colors.grey[300],
+                      color: Colors.red,
+                    ),
+                  ),
                   Text(
-                    "Time Left: $_timeLeft",
-                    style: const TextStyle(fontSize: 20),
+                    "Score Saat Ini : $_score",
+                    style: const TextStyle(fontSize: 15, color: Colors.grey),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    "Kategori: ${_questions[_questionIndex].kategory}",
+                    "Kategori: ${_soal[_indexSoal].kategory}",
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -361,16 +368,16 @@ class _GameState extends State<Game> {
                   const SizedBox(height: 10),
                   Expanded(
                     child: GridView.builder(
-                      itemCount: _questions[_questionIndex].pilihan.length,
+                      itemCount: _soal[_indexSoal].pilihan.length,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            childAspectRatio: 3,
+                            childAspectRatio: 1,
                             crossAxisSpacing: 8,
                             mainAxisSpacing: 8,
                           ),
                       itemBuilder: (context, index) {
-                        String img = _questions[_questionIndex].pilihan[index];
+                        String img = _soal[_indexSoal].pilihan[index];
 
                         return GestureDetector(
                           onTap: () => answer(img),

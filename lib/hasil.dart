@@ -18,17 +18,17 @@ class Hasil extends StatelessWidget {
   String getGelar() {
     switch (correct) {
       case 5:
-        return "Maestro dell'Indovinello 🏆";
+        return "Maestro dell'Indovinello (Master of Riddles)";
       case 4:
-        return "Esperto dell'Indovinello 🔥";
+        return "Esperto dell'Indovinello (Expert of Riddles)";
       case 3:
-        return "Abile Indovinatore 👍";
+        return "Abile Indovinatore (Skillful Guesser)";
       case 2:
-        return "Principiante dell'Indovinello 🙂";
+        return "Principiante dell'Indovinello (Riddle Beginner)";
       case 1:
-        return "Neofita dell'Indovinello 😅";
+        return "Neofita dell'Indovinello (Riddle Novice)";
       default:
-        return "Sfortunato Indovinatore 😢";
+        return "Sfortunato Indovinatore (Unlucky Guesser)";
     }
   }
 
@@ -44,7 +44,7 @@ class Hasil extends StatelessWidget {
             children: [
               // SCORE
               Text(
-                "Score: $score",
+                "Total Score: $score",
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
