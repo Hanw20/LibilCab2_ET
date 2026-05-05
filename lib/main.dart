@@ -51,8 +51,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  int _currentIndex = 0;
 
   void doLogout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -68,12 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
         active_user = value;
       }),
     );
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
   }
 
   @override
@@ -92,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "Cara Bermain:\nJawab semua pertanyaan dengan benar untuk mendapatkan skor tertinggi!",
+              "Cara Bermain:\nJawab semua pertanyaan dengan benar untuk mendapatkan skor tertinggi! \n\nPoin akan ditentukan dari seberapa cepat pertanyaan dijawab. \n\nSemakin banyak jawaban benar, semakin tinggi gelar yang kamu dapatkan!\n\n Selamat bermain!",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16),
             ),

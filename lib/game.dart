@@ -44,6 +44,7 @@ class _GameState extends State<Game> {
   int _waktuHapal = 3;
   final int _setWaktuHapal = 3;
 
+
   int _indexSoal = 0;
   int _score = 0;
   bool _isGameOver = false;
@@ -204,13 +205,13 @@ class _GameState extends State<Game> {
       setState(() {
         _memoryIndex = i;
         _waktuHapal = _setWaktuHapal;
-        _imageOpacity = 0.0; // fade out awal
+        _imageOpacity = 0.0; 
       });
 
       await Future.delayed(const Duration(milliseconds: 300));
 
       setState(() {
-        _imageOpacity = 1.0; // fade in
+        _imageOpacity = 1.0; 
       });
 
       for (int t = _setWaktuHapal; t >= 0; t--) {
@@ -221,7 +222,7 @@ class _GameState extends State<Game> {
       }
 
       setState(() {
-        _imageOpacity = 0.0; // fade out sebelum ganti soal berikutnya
+        _imageOpacity = 0.0; 
       });
       await Future.delayed(const Duration(milliseconds: 500));
     }
