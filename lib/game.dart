@@ -43,8 +43,8 @@ class _GameState extends State<Game> {
   int _waktuGame = 30;
   final int _setWaktuGame = 30;
   int _jumlahJawabanBenar = 0;
-  int _waktuHapal = 3; 
-  final int _setWaktuHapal = 3; 
+  int _waktuHapal = 3;
+  final int _setWaktuHapal = 3;
 
   int _indexSoal = 0;
   int _score = 0;
@@ -55,6 +55,9 @@ class _GameState extends State<Game> {
 
   List<String> _listGambar = [];
   List<Question> _soal = [];
+  double _imageOpacity = 0.0;
+  double _soalOpacity = 1.0;
+  int? _tappedIndex;
 
   // ================= FIX JUMLAH SOAL =================
   int get _totalSoal => 5;
@@ -205,13 +208,26 @@ class _GameState extends State<Game> {
       setState(() {
         _memoryIndex = i;
         _waktuHapal = _setWaktuHapal;
+        _imageOpacity = 0.0; // fade out dulu sebelum gambar baru muncul
       });
+
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      setState(() {
+        _imageOpacity = 1.0; // fade in gambar
+      });
+
       for (int t = _setWaktuHapal; t >= 0; t--) {
         setState(() {
           _waktuHapal = t;
         });
         await Future.delayed(const Duration(seconds: 1));
       }
+
+      setState(() {
+        _imageOpacity = 0.0; // fade out sebelum ganti soal berikutnya
+      });
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     setState(() {
@@ -223,7 +239,7 @@ class _GameState extends State<Game> {
 
   // ================= TIMER =================
   void startTimer() {
-    _timer?.cancel(); 
+    _timer?.cancel();
     _waktuGame = _setWaktuGame;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -243,7 +259,7 @@ class _GameState extends State<Game> {
 
     if (selected == _soal[_indexSoal].jawaban) {
       _score += _waktuGame;
-      _jumlahJawabanBenar++; 
+      _jumlahJawabanBenar++;
     }
 
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -252,12 +268,20 @@ class _GameState extends State<Game> {
   }
 
   // ================= NEXT =================
-  void nextSoal() {
+  void nextSoal() async {
     _timer?.cancel();
+
+    setState(() {
+      _soalOpacity = 0.0; // fade out
+      _tappedIndex = null;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 500));
 
     if (_indexSoal < _soal.length - 1) {
       setState(() {
         _indexSoal++;
+        _soalOpacity = 1.0; // fade in
       });
       startTimer();
     } else {
@@ -268,7 +292,11 @@ class _GameState extends State<Game> {
   // ================= END =================
   void endGame() async {
     _timer?.cancel();
-    await saveScore(active_user.isEmpty ? "Guest" : active_user, _jumlahJawabanBenar,_score);
+    await saveScore(
+      active_user.isEmpty ? "Guest" : active_user,
+      _jumlahJawabanBenar,
+      _score,
+    );
 
     setState(() {
       _isGameOver = true;
@@ -290,7 +318,12 @@ class _GameState extends State<Game> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Memory Game")),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("Memory Game"),
+      ),
+      backgroundColor: const Color.fromARGB(255, 217, 241, 219),
+
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: _isGameOver
@@ -319,9 +352,19 @@ class _GameState extends State<Game> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Image.asset(_listGambar[_memoryIndex], height: 200),
+                    AnimatedOpacity(
+                      opacity: _imageOpacity,
+                      duration: const Duration(milliseconds: 500),
+                      child: Image.asset(
+                        _listGambar[_memoryIndex],
+                        height: 200,
+                      ),
+                    ),
 
-                    Text("Waktu Menghapal:", style: const TextStyle(fontSize: 20)),
+                    Text(
+                      "Waktu Menghapal:",
+                      style: const TextStyle(fontSize: 20),
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: CircularPercentIndicator(
@@ -335,66 +378,97 @@ class _GameState extends State<Game> {
                   ],
                 ),
               )
-            : Column(
-                children: [
-                  Text(
-                    "Soal ${_indexSoal + 1} / $_totalSoal",
-                    style: const TextStyle(fontSize: 15, color: Colors.grey),
-                  ),
-                  LinearProgressIndicator(value: (_indexSoal + 1) / _totalSoal),
-                  const SizedBox(height: 8),
-                  Text("Time Left: $_waktuGame", style: const TextStyle(fontSize: 20)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: LinearProgressIndicator(
-                      value: _waktuGame / _setWaktuGame,
-                      minHeight: 10,
-                      backgroundColor: Colors.grey[300],
-                      color: Colors.red,
+            : AnimatedOpacity(
+                opacity: _soalOpacity,
+                duration: const Duration(milliseconds: 500),
+                child: Column(
+                  children: [
+                    Text(
+                      "Soal ${_indexSoal + 1} / $_totalSoal",
+                      style: const TextStyle(fontSize: 15, color: Colors.grey),
                     ),
-                  ),
-                  Text(
-                    "Score Saat Ini : $_score",
-                    style: const TextStyle(fontSize: 15, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Kategori: ${_soal[_indexSoal].kategory}",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    LinearProgressIndicator(
+                      value: (_indexSoal + 1) / _totalSoal,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: GridView.builder(
-                      itemCount: _soal[_indexSoal].pilihan.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 1,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
-                      itemBuilder: (context, index) {
-                        String img = _soal[_indexSoal].pilihan[index];
+                    const SizedBox(height: 8),
+                    Text(
+                      "Time Left: $_waktuGame",
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: LinearProgressIndicator(
+                        value: _waktuGame / _setWaktuGame,
+                        minHeight: 10,
+                        backgroundColor: Colors.brown[300],
+                        color: Colors.red,
+                      ),
+                    ),
+                    Text(
+                      "Score Saat Ini : $_score",
+                      style: const TextStyle(fontSize: 15, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Kategori: ${_soal[_indexSoal].kategory}",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: GridView.builder(
+                        itemCount: _soal[_indexSoal].pilihan.length,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 1,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                            ),
+                        itemBuilder: (context, index) {
+                          String img = _soal[_indexSoal].pilihan[index];
+                          bool isTapped = _tappedIndex == index;
+                          bool isCorrect = img == _soal[_indexSoal].jawaban;
 
-                        return GestureDetector(
-                          onTap: () => answer(img),
-                          child: Card(
-                            elevation: 2,
-                            child: Padding(
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _tappedIndex = index;
+                              });
+                              answer(img);
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.fastOutSlowIn,
+                              decoration: BoxDecoration(
+                                color: isTapped
+                                    ? (isCorrect
+                                          ? Colors.green.shade100
+                                          : Colors.red.shade100)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(
+                                  isTapped ? 20 : 8,
+                                ),
+                                border: Border.all(
+                                  color: isTapped
+                                      ? (isCorrect ? Colors.green : Colors.red)
+                                      : Colors.grey.shade300,
+                                  width: isTapped ? 3 : 1,
+                                ),
+                              ),
                               padding: const EdgeInsets.all(5),
                               child: Center(
                                 child: Image.asset(img, fit: BoxFit.contain),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
       ),
     );

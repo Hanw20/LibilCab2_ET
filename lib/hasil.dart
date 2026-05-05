@@ -14,19 +14,30 @@ class Hasil extends StatelessWidget {
     required this.total,
   });
 
-   String getGelar() {
-    if (correct == 5) return "Maestro dell'Indovinello (Master of Riddles)";
-    else if (correct == 4) return "Esperto dell'Indovinello (Expert of Riddles)";
-    else if (correct == 3) return "Abile Indovinatore (Skillful Guesser)";
-    else if (correct == 2) return "Principiante dell'Indovinello (Riddle Beginner)";
-    else if (correct == 1) return "Neofita dell'Indovinello (Riddle Novice)";
-    else return "Sfortunato Indovinatore (Unlucky Guesser)";
+  String getGelar() {
+    if (correct == 5)
+      return "Maestro dell'Indovinello (Master of Riddles)";
+    else if (correct == 4)
+      return "Esperto dell'Indovinello (Expert of Riddles)";
+    else if (correct == 3)
+      return "Abile Indovinatore (Skillful Guesser)";
+    else if (correct == 2)
+      return "Principiante dell'Indovinello (Riddle Beginner)";
+    else if (correct == 1)
+      return "Neofita dell'Indovinello (Riddle Novice)";
+    else
+      return "Sfortunato Indovinatore (Unlucky Guesser)";
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Hasil Permainan")),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("Hasil Permainan"),
+      ),
+      backgroundColor: const Color.fromARGB(255, 217, 241, 219),
+
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),

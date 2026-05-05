@@ -12,12 +12,18 @@ class _HighScoreState extends State<HighScore> {
   List<List<String>> scores = [];
 
   String getGelar(int correct) {
-    if (correct == 5) return "Maestro dell'Indovinello (Master of Riddles)";
-    else if (correct == 4) return "Esperto dell'Indovinello (Expert of Riddles)";
-    else if (correct == 3) return "Abile Indovinatore (Skillful Guesser)";
-    else if (correct == 2) return "Principiante dell'Indovinello (Riddle Beginner)";
-    else if (correct == 1) return "Neofita dell'Indovinello (Riddle Novice)";
-    else return "Sfortunato Indovinatore (Unlucky Guesser)";
+    if (correct == 5)
+      return "Maestro dell'Indovinello (Master of Riddles)";
+    else if (correct == 4)
+      return "Esperto dell'Indovinello (Expert of Riddles)";
+    else if (correct == 3)
+      return "Abile Indovinatore (Skillful Guesser)";
+    else if (correct == 2)
+      return "Principiante dell'Indovinello (Riddle Beginner)";
+    else if (correct == 1)
+      return "Neofita dell'Indovinello (Riddle Novice)";
+    else
+      return "Sfortunato Indovinatore (Unlucky Guesser)";
   }
 
   Future<void> loadScores() async {
@@ -39,7 +45,12 @@ class _HighScoreState extends State<HighScore> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("High Score"), centerTitle: true),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("High Score"),
+        centerTitle: true,
+      ),
+      backgroundColor: const Color.fromARGB(255, 217, 241, 219),
 
       body: scores.isEmpty
           ? const Center(child: Text("Belum ada data"))

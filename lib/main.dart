@@ -31,10 +31,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.greenAccent)),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      routes: {'highscore': (context) => HighScore(),
-      'game': (context) => Game(),
+      routes: {
+        'highscore': (context) => HighScore(),
+        'game': (context) => Game(),
       },
     );
   }
@@ -85,6 +86,8 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text("Home"),
       ),
+      backgroundColor: const Color.fromARGB(255, 217, 241, 219),
+
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

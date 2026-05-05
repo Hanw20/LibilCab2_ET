@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:projectuts_libilcab2/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class MyLogin extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.greenAccent)),
       home: Login(),
     );
   }
@@ -32,7 +31,12 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text('Login'),
+      ),
+      backgroundColor: const Color.fromARGB(255, 217, 241, 219),
+
       body: Container(
         height: 300,
         margin: EdgeInsets.all(20),
